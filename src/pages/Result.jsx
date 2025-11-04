@@ -4,12 +4,16 @@ import { fetchRestaurantsOSM } from "../services/overpass";
 import { geocodeAddress } from "../services/geocode";
 import MiniMap from "../components/MiniMap";
 import { useFavorites } from "../hooks/useFavorites";
+import WeightedPicker from "../utils/WeightedPicker";
 
-function haversine(lat1, lon1, lat2, lon2){
+function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
-  const toRad = d => d * Math.PI / 180;
-  const dφ = toRad(lat2 - lat1), dλ = toRad(lon2 - lon1);
-  const a = Math.sin(dφ/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dλ/2)**2;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dφ = toRad(lat2 - lat1),
+    dλ = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dφ / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dλ / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // meters
 }
 
@@ -53,11 +57,11 @@ export default function Result() {
           lat: coords.lat,
           lon: coords.lon,
           radiusMiles: radius,
-          cuisinesCSV: cuisines
+          cuisinesCSV: cuisines,
         });
 
-        // OSM has no real ratings; our helper generates 3.5–5.0 in overpass.js
-        items = items.filter(r => r.rating >= minRating);
+        // OSM has synthetic ratings from our service; apply min-rating filter
+        items = items.filter((r) => r.rating >= minRating);
 
         // Sort by distance (closest first)
         if (coords) {
@@ -78,37 +82,51 @@ export default function Result() {
     })();
   }, [search]);
 
-  // Pick a random one, rerollable
+  // Weighted random pick (OOP/DSA): favor higher-rated places
   const pick = useMemo(() => {
     if (!restaurants.length) return null;
-    const idx = Math.floor((Math.random() * restaurants.length + spin)) % restaurants.length;
-    return restaurants[idx];
+    const picker = new WeightedPicker(restaurants, (r) => Math.max(1, r.rating));
+    // deterministic-ish random so reroll changes the result
+    const seeded = () => Math.abs(Math.sin(spin + 0.12345)) % 1;
+    return picker.pick(seeded);
   }, [restaurants, spin]);
 
   // Document title polish
   useEffect(() => {
-    document.title = pick ? `${pick.name} · Restaurant Roulette` : "Results · Restaurant Roulette";
+    document.title = pick
+      ? `${pick.name} · Restaurant Roulette`
+      : "Results · Restaurant Roulette";
   }, [pick]);
 
   const gmapLink = (r) =>
-    r ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name} ${r.address}`)}` : "#";
+    r
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          `${r.name} ${r.address}`
+        )}`
+      : "#";
 
   return (
     <main className="container" style={{ paddingTop: 32 }}>
       <div className="card" style={{ marginBottom: 14 }}>
         <h2 style={{ marginTop: 0 }}>Result</h2>
         <p>
-          Cuisines: <b>{cuisines || "Any"}</b> · Radius: <b>{radius} mi</b> · Min rating:{" "}
-          <b>{minRating.toFixed(1)}</b>
+          Cuisines: <b>{cuisines || "Any"}</b> · Radius: <b>{radius} mi</b> ·
+          Min rating: <b>{minRating.toFixed(1)}</b>
         </p>
       </div>
 
-      {loading && <div className="shimmer" aria-busy="true" aria-label="Loading results" />}
+      {loading && (
+        <div className="shimmer" aria-busy="true" aria-label="Loading results" />
+      )}
 
       {!loading && error && (
         <div className="card">
           ❗ {error}{" "}
-          <button className="smallBtn" onClick={() => window.location.reload()} aria-label="Retry">
+          <button
+            className="smallBtn"
+            onClick={() => window.location.reload()}
+            aria-label="Retry"
+          >
             Retry
           </button>
         </div>
@@ -121,24 +139,80 @@ export default function Result() {
             <p>⭐ {pick.rating}</p>
             <p>{pick.address}</p>
             {origin && pick?.lat && pick?.lon && (
-              <p>Distance: {(haversine(origin.lat, origin.lon, pick.lat, pick.lon)/1609.34).toFixed(1)} mi</p>
+              <p>
+                Distance:{" "}
+                {(
+                  haversine(origin.lat, origin.lon, pick.lat, pick.lon) / 1609.34
+                ).toFixed(1)}{" "}
+                mi
+              </p>
             )}
 
-            <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-              <a className="smallBtn linkBtn" href={gmapLink(pick)} target="_blank" rel="noreferrer">View on Maps</a>
-              <button className="smallBtn linkBtn" onClick={() => setSpin(n => n + 1)} aria-label="Reroll">Reroll</button>
-              <button className="smallBtn" onClick={() => navigate(-1)} aria-label="Go back">Back</button>
-              <Link className="smallBtn" to="/" style={{ textDecoration: "none", display: "inline-block" }}>Home</Link>
-              {!isFavorite(pick.id)
-                ? <button className="smallBtn" onClick={() => addFavorite(pick)}>☆ Save</button>
-                : <button className="smallBtn" onClick={() => removeFavorite(pick.id)}>★ Saved</button>}
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginTop: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <a
+                className="smallBtn linkBtn"
+                href={gmapLink(pick)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View on Maps
+              </a>
+              <button
+                className="smallBtn linkBtn"
+                onClick={() => setSpin((n) => n + 1)}
+                aria-label="Reroll"
+              >
+                Reroll
+              </button>
+              <button
+                className="smallBtn"
+                onClick={() => navigate(-1)}
+                aria-label="Go back"
+              >
+                Back
+              </button>
+              <Link
+                className="smallBtn"
+                to="/"
+                style={{ textDecoration: "none", display: "inline-block" }}
+              >
+                Home
+              </Link>
+              {!isFavorite(pick.id) ? (
+                <button
+                  className="smallBtn"
+                  onClick={() => addFavorite(pick)}
+                >
+                  ☆ Save
+                </button>
+              ) : (
+                <button
+                  className="smallBtn"
+                  onClick={() => removeFavorite(pick.id)}
+                >
+                  ★ Saved
+                </button>
+              )}
             </div>
 
             <MiniMap lat={pick?.lat} lon={pick?.lon} />
           </div>
 
           <div className="card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+              }}
+            >
               <h4 style={{ margin: 0 }}>More nearby options</h4>
               <span style={{ color: "var(--muted)", fontSize: 13 }}>
                 {restaurants.length} found
@@ -146,16 +220,33 @@ export default function Result() {
             </div>
 
             <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
-              {restaurants.slice(0, 10).map(r => (
-                <li key={r.id} style={{ padding: "10px 0", borderBottom: "1px solid #eee" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "baseline" }}>
+              {restaurants.slice(0, 10).map((r) => (
+                <li
+                  key={r.id}
+                  style={{ padding: "10px 0", borderBottom: "1px solid #eee" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 10,
+                      alignItems: "baseline",
+                    }}
+                  >
                     <div>
                       <div style={{ fontWeight: 700 }}>{r.name}</div>
                       <div style={{ fontSize: 13, color: "var(--muted)" }}>
                         ⭐ {r.rating} · {r.address}
                       </div>
                     </div>
-                    <a className="smallBtn" href={gmapLink(r)} target="_blank" rel="noreferrer">Maps</a>
+                    <a
+                      className="smallBtn"
+                      href={gmapLink(r)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Maps
+                    </a>
                   </div>
                 </li>
               ))}
@@ -165,7 +256,9 @@ export default function Result() {
       )}
 
       {!loading && !error && restaurants.length === 0 && (
-        <div className="card">No restaurants found. Try widening the radius or removing filters.</div>
+        <div className="card">
+          No restaurants found. Try widening the radius or removing filters.
+        </div>
       )}
     </main>
   );
