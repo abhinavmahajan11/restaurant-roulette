@@ -3,7 +3,7 @@ export default function Hero() {
     <header className="hero">
       <div className="heroInner">
         <div className="heroBadge">🍽️</div>
-        <h1 className="heroTitle">Restaurant Generator</h1>
+        <h1 className="heroTitle">Restaurant Roulette!!!</h1>
         <p className="heroSub">
           Discover your next dining experience with our smart restaurant finder.
           Filter by cuisine, location, and ratings to find the perfect spot!
