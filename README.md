@@ -1,16 +1,31 @@
-# React + Vite
+# Restaurant Roulette
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple web app that helps indecisive eaters choose where to go.  
+Pick a location (or use your current location), set cuisines, radius, and minimum rating, then **spin** to get a random nearby spot. See details, distance, a mini-map, and quick links to Google Maps. Save favorites for later.
 
-Currently, two official plugins are available:
+Live demo: (https://restaurant-roulette-abhi.netlify.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+##  Features
+- 📍 **Location**: enter an address or “Use My Location” (browser geolocation)
+- 🍽️ **Cuisine filter**: comma-separated cuisines (e.g., `Indian, Thai`)
+- 📏 **Radius**: 1–25 miles
+- ⭐ **Min rating**: filter results (OSM has synthetic ratings 3.5–5.0)
+- 🎲 **Reroll**: randomize pick without reloading
+- 🗺️ **Mini map** (Leaflet + OSM tiles)
+- 💾 **Favorites**: saved to localStorage and shown on Home
+- 🔁 **Remembers filters** across visits
+- ♿ **A11y touches**: aria labels, disabled states, keyboard-friendly
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Tech Stack
+- **Frontend**: React + Vite
+- **Maps**: Leaflet, OpenStreetMap tiles
+- **Data**: OpenStreetMap Overpass API + Nominatim (geocoding)
+- **Styling**: hand-rolled CSS (lightweight)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+---
+
