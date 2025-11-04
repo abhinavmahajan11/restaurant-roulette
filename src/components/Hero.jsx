@@ -8,7 +8,7 @@ export default function Hero() {
           Discover your next dining experience with our smart restaurant finder.
           Filter by cuisine, location, and ratings to find the perfect spot!
         </p>
-        <p className="heroNote">✨ Powered by AI-assisted filters ✨</p>
+        <p className="heroNote">✨ Welcome ✨</p>
       </div>
       <div className="ribbon" />
     </header>
