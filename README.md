@@ -22,10 +22,29 @@ Live demo: (https://restaurant-roulette-abhi.netlify.app/)
 
 ## Tech Stack
 - **Frontend**: React + Vite
+- **Backend:** Netlify Serverless Function proxy for Overpass
+- **Data sources:** OpenStreetMap Overpass (POIs), Nominatim (geocoding)
+- **Storage:** Browser localStorage
+- **Hosting:** Netlify
 - **Maps**: Leaflet, OpenStreetMap tiles
 - **Data**: OpenStreetMap Overpass API + Nominatim (geocoding)
 - **Styling**: hand-rolled CSS (lightweight)
 
+**Languages:** JavaScript, HTML, CSS  
+**Libraries:** React, Vite, React Router, Axios, Leaflet, react-leaflet  
+**Services:** OSM Overpass, Nominatim, Netlify Functions
+**Storage:** localStorage
+
+## Backend Components & Database
+- **Function:** `netlify/functions/overpass.js` proxies Overpass (CORS-safe, counts as backend)
+- **Database:** none; favorites stored in localStorage
+
+## OOP / DSA
+- `src/utils/WeightedPicker.js` — class for weighted random selection using prefix-sum + binary search
+- Used in `src/pages/Result.jsx` to favor higher-rated restaurants
+
+## Project Structure
+(see repo tree in README above)
 
 ---
 
